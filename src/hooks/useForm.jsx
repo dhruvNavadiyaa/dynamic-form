@@ -2,8 +2,6 @@ import { useState } from 'react'
 
 export default function useForm() {
 
-  // const [email, password, gender] = props;  
-
   const [formData, setFormData] = useState({})
   const [errors, setErrors] = useState({})
 
@@ -14,49 +12,46 @@ export default function useForm() {
       [name]: value
     })
     validateFields(name, value, item);
+  }
 
+  const validate = (name, value, item) => {
+    let err = {}
+    if (!value) {
+      err = {
+        ...err,
+        [name]: item?.required?.defaultMsg
+      }
+    } else if (item?.patterns && !item?.patterns?.regex.test(value)) {
+      console.log('pattern error')
+      err = {
+        ...err,
+        [name]: item?.patterns?.error
+      }
+    } else {
+      err = { ...err, [name]: '' }
+    }
+    return err
   }
 
   const validateFields = (name, value, item) => {
-    if (!value) {
-      setErrors({
-        ...errors,
-        [name]: item?.required?.defaultMsg
-      })
-
-    } else if (item?.patterns && !item?.patterns?.regex.test(value)) {
-      console.log('pattern error')
-      setErrors({
-        ...errors,
-        [name]: item?.patterns?.error
-      })
-    } else {
-      const newErrors = errors
-      delete newErrors[name];
-      setErrors(newErrors)
-    }
-
+    const err = validate(name, value, item);
+    setErrors({...err})
   }
 
   const validateAllFields = (fields) => {
     let err = {}
     fields?.forEach(element => {
-      const fieldname = element.name
-      if (!formData[fieldname]) {
-        err = {
-          ...err,
-          [fieldname]: element?.required?.defaultMsg
-        }
-      } else {
-        const newErrors = errors
-        delete newErrors[fieldname];
-        setErrors(newErrors)
-      }
+      const fieldname = element.name;
+      const newErr = validate(fieldname, formData[fieldname], element);
+      err = { ...err, ...newErr };
     });
-    setErrors(err)
-    // console.log(Object.entries(err).length)
-    return Object.entries(err).length === 0 ? true : false;
+    setErrors({...err})
+    return Object.values(err).every((item) => item === "")
   }
 
-  return { formData, setFormData, handleChange, errors, validateAllFields }
+  const submitConditions = (signInArray) => {
+    if (validateAllFields(signInArray) && Object.values(errors).every((item) => item === "")) return true;
+  }
+
+  return { formData, setFormData, handleChange, errors, submitConditions }
 }

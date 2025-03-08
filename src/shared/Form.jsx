@@ -1,15 +1,14 @@
 import React from 'react'
-import { signInArray } from '../description/form/signIn.description'
 
 const Form = (props) => {
     // console.log(props);
 
-    const { formData, handleChange, errors } = props;
+    const { fields, formData, handleChange, errors } = props;
 
     return (
         <div className='space-y-3'>
             {
-                signInArray.map((item, index) => {
+                fields.map((item, index) => {
                     if (item.type === 'text' || item.type === 'email' || item.type === 'password') return (
                         <div key={index}>
                             <input
@@ -52,7 +51,8 @@ const Form = (props) => {
                                                         id={i.id}
                                                         value={i.value}
                                                         name={item.name}
-                                                        onChange={handleChange}
+                                                        // onChange={handleChange}
+                                                        onChange={(e)=>{handleChange(e,item)}}
                                                     />
                                                 </div>
                                             )
